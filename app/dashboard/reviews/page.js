@@ -330,9 +330,9 @@ export default function ReviewsPage() {
           
           {reviews.length === 0 ? (
             <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <p className="text-gray-600 mb-4">You haven't written any reviews yet.</p>
+              <p className="text-gray-600 mb-4">You havent written any reviews yet.</p>
               <p className="text-sm text-gray-500">
-                Review products you've purchased to help other shoppers.
+                Review products youve purchased to help other shoppers.
               </p>
             </div>
           ) : (

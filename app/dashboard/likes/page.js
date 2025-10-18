@@ -101,7 +101,7 @@ const fetchLikedProducts = async () => {
 
         {likedProducts.length === 0 ? (
           <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-            <p className="text-gray-600 mb-4">You haven't liked any products yet.</p>
+            <p className="text-gray-600 mb-4">You havent liked any products yet.</p>
             <p className="text-sm text-gray-500 mb-6">
               Like products you love to save them for later.
             </p>
