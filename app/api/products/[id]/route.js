@@ -8,7 +8,9 @@ export async function GET(request, { params }) {
   try {
     await dbConnect();
     
-    const product = await Product.findById(params.id)
+    const { id } = params; // Destructure params properly
+    
+    const product = await Product.findById(id)
       .populate('category', 'name')
       .populate('subCategory', 'name')
       .populate('collection', 'name');

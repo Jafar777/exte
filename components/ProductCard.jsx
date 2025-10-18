@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import { CiHeart } from "react-icons/ci";
+import { FaHeart } from "react-icons/fa";
 const ProductCard = ({ product }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [imageError, setImageError] = useState(false);
@@ -20,10 +21,6 @@ const ProductCard = ({ product }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Toggle like state
-        setIsLiked(!isLiked);
-
-        // TODO: Implement actual like API call
         try {
             const response = await fetch(`/api/products/${product._id}/like`, {
                 method: 'POST',
@@ -31,12 +28,13 @@ const ProductCard = ({ product }) => {
                 body: JSON.stringify({ liked: !isLiked })
             });
 
-            if (!response.ok) {
-                // Revert if API call fails
-                setIsLiked(isLiked);
+            if (response.ok) {
+                setIsLiked(!isLiked);
+            } else {
+                console.error('Failed to update like');
             }
         } catch (error) {
-            setIsLiked(isLiked);
+            console.error('Error updating like:', error);
         }
     };
 
@@ -63,9 +61,8 @@ const ProductCard = ({ product }) => {
                                 src={product.featuredImage}
                                 alt={product.name}
                                 fill
-                                className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
-                                    !imageLoading ? 'opacity-100' : 'opacity-0'
-                                }`}
+                                className={`object-cover transition-transform duration-500 group-hover:scale-105 ${!imageLoading ? 'opacity-100' : 'opacity-0'
+                                    }`}
                                 onError={handleImageError}
                                 onLoad={handleImageLoad}
                                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -88,25 +85,16 @@ const ProductCard = ({ product }) => {
                     <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300">
                         <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             {/* Like Button */}
-                            <button
-                                onClick={handleLike}
-                                className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
-                            >
-                                <svg
-                                    className={`w-4 h-4 transition-colors ${isLiked ? 'text-red-500 fill-current' : 'text-gray-600'
-                                        }`}
-                                    fill={isLiked ? "currentColor" : "none"}
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                    />
-                                </svg>
-                            </button>
+<button
+  onClick={handleLike}
+  className="bg-white p-2 rounded-full shadow-md hover:bg-gray-50 transition-colors"
+>
+  {isLiked ? (
+    <FaHeart className="w-4 h-4 text-red-500" />
+  ) : (
+    <CiHeart className="w-4 h-4 text-gray-600" />
+  )}
+</button>
 
                             {/* Quick Add Button */}
                             <button

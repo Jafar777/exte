@@ -102,6 +102,38 @@ export default function CartPage() {
     }
   };
 
+  const handleCheckout = async () => {
+    try {
+      setUpdating(true);
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cart.items,
+          total: cart.total,
+        }),
+      });
+
+      if (response.ok) {
+        const order = await response.json();
+        // Clear cart after successful order creation
+        await clearCart();
+        alert('Order placed successfully! You can track your order status in the orders page.');
+        router.push('/dashboard/orders');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to place order');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Failed to place order');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white pt-24">
@@ -298,30 +330,29 @@ export default function CartPage() {
                   <span>Subtotal ({cart.itemCount} items)</span>
                   <span>${cart.total.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-light">
-                  <span>Shipping</span>
-                  <span className="text-green-600">FREE</span>
-                </div>
-                <div className="flex justify-between text-sm font-light">
-                  <span>Estimated Tax</span>
-                  <span>${(cart.total * 0.08).toFixed(2)}</span>
-                </div>
+                
+                {/* Only show total (no shipping, no tax) */}
                 <div className="border-t border-gray-300 pt-4">
                   <div className="flex justify-between text-base font-light">
                     <span>Total</span>
-                    <span>${(cart.total * 1.08).toFixed(2)}</span>
+                    <span>${cart.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
+              {/* Payment Method Notice */}
+              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800 font-light text-center">
+                  Currently we only accept <strong>Cash on Delivery</strong>
+                </p>
+              </div>
+
               <button
-                onClick={() => {
-                  // TODO: Implement checkout
-                  alert('Checkout functionality coming soon!');
-                }}
-                className="w-full bg-gray-900 text-white py-4 text-sm font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 mb-4"
+                onClick={handleCheckout}
+                disabled={updating}
+                className="w-full bg-gray-900 text-white py-4 text-sm font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                PROCEED TO CHECKOUT
+                {updating ? 'PROCESSING...' : 'PROCEED TO CHECKOUT'}
               </button>
 
               <Link

@@ -33,12 +33,14 @@ const UserSchema = new mongoose.Schema({
   image: {
     type: String,
     default: null
-  }
-
+  },
+  likedProducts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }]
 }, {
-  timestamps: true
+  timestamps: true,
+  strictPopulate: false // Add this line to fix the populate error
 });
-
-// Create unique index for email
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);
