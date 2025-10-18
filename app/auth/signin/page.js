@@ -44,53 +44,48 @@ export default function AuthPage() {
         return;
       }
       
-      // In your handleSubmit function, replace the fetch block with:
-try {
-  const response = await fetch('/api/auth/signup', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      firstName,
-      lastName,
-      email: trimmedEmail,
-      password: password
-    }),
-  });
-  
-  const responseText = await response.text();
-  
-  if (!response.ok) {
-    // Try to parse as JSON, but fallback to text if it fails
-    let errorData;
-    try {
-      errorData = JSON.parse(responseText);
-    } catch {
-      errorData = { error: `Server error: ${response.status}` };
-    }
-    setError(errorData.error || t.signupError || 'Signup failed');
-    setLoading(false);
-    return;
-  }
-  
-  // If response is OK, parse JSON
-  const data = JSON.parse(responseText);
-  
-  // Continue with signin logic...
-  const result = await signIn('credentials', {
-    redirect: false,
-    email: trimmedEmail,
-    password: password
-  });
-  
-  if (result.error) {
-    setError(t.signinAfterSignupFailed || 'Signup successful! Please sign in');
-  } else {
-    router.push('/dashboard');
-  }
-} catch (err) {
-  console.error('Signup error:', err);
-  setError(t.networkError || 'Network error');
-}
+      try {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            email: trimmedEmail,
+            password: password
+          }),
+        });
+        
+        const responseText = await response.text();
+        
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+          } catch {
+            errorData = { error: `Server error: ${response.status}` };
+          }
+          setError(errorData.error || t.signupError || 'Signup failed');
+          setLoading(false);
+          return;
+        }
+        
+        const data = JSON.parse(responseText);
+        const result = await signIn('credentials', {
+          redirect: false,
+          email: trimmedEmail,
+          password: password
+        });
+        
+        if (result.error) {
+          setError(t.signinAfterSignupFailed || 'Signup successful! Please sign in');
+        } else {
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        console.error('Signup error:', err);
+        setError(t.networkError || 'Network error');
+      }
     } else {
       // Sign in
       const result = await signIn('credentials', {
@@ -120,37 +115,30 @@ try {
   };
 
   return (
-    <div 
-      className="min-h-screen flex flex-col "
-         
-
-    >
-           <Image
-                src="/stoppage.png"
-                alt="stoppage.png Background"
-                fill
-                className="object-cover z-[-1]"
-                priority
-              />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex flex-col">
       <Navbar />
       
-      <div className="flex-grow flex items-center justify-center ">
-        <div className=" p-8 rounded-lg shadow-md w-full max-w-md bg-gray-100">
-          <h2 className="text-black text-2xl font-bold mb-6 text-center">
-            {isSignUp ? (t.signUp || 'Sign Up') : (t.signIn || 'Sign In')}
+      <div className="flex-grow flex items-center justify-center px-4 py-12">
+        <div className="relative bg-black/40 backdrop-blur-md border border-gray-700 p-12 rounded-none w-full max-w-md">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+          
+          <h2 className="text-white text-3xl font-light tracking-wider mb-8 text-center uppercase">
+            {isSignUp ? (t.signUp || 'CREATE ACCOUNT') : (t.signIn || 'SIGN IN')}
           </h2>
           
           {error && (
-            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+            <div className="mb-6 p-4 bg-red-900/30 border border-red-700 text-red-200 text-sm font-light tracking-wide">
               {error}
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-6">
             {isSignUp && (
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-black mb-2" htmlFor="firstName">
+                  <label className="block text-gray-300 text-sm font-light tracking-wide mb-3 uppercase" htmlFor="firstName">
                     {t.firstName || 'First Name'}
                   </label>
                   <input
@@ -158,13 +146,13 @@ try {
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-transparent border border-gray-600 text-white font-light tracking-wide placeholder-gray-500 focus:outline-none focus:border-white transition-colors duration-200"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-black mb-2" htmlFor="lastName">
+                  <label className="block text-gray-300 text-sm font-light tracking-wide mb-3 uppercase" htmlFor="lastName">
                     {t.lastName || 'Last Name'}
                   </label>
                   <input
@@ -172,15 +160,15 @@ try {
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-transparent border border-gray-600 text-white font-light tracking-wide placeholder-gray-500 focus:outline-none focus:border-white transition-colors duration-200"
                     required
                   />
                 </div>
               </div>
             )}
             
-            <div className="mb-4">
-              <label className="block text-black mb-2" htmlFor="email">
+            <div>
+              <label className="block text-gray-300 text-sm font-light tracking-wide mb-3 uppercase" htmlFor="email">
                 {t.email || 'Email'}
               </label>
               <input
@@ -188,14 +176,14 @@ try {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-transparent border border-gray-600 text-white font-light tracking-wide placeholder-gray-500 focus:outline-none focus:border-white transition-colors duration-200"
                 placeholder="your@email.com"
                 required
               />
             </div>
             
-            <div className="mb-4">
-              <label className="block text-black mb-2" htmlFor="password">
+            <div>
+              <label className="block text-gray-300 text-sm font-light tracking-wide mb-3 uppercase" htmlFor="password">
                 {t.password || 'Password'}
               </label>
               <input
@@ -203,14 +191,14 @@ try {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-transparent border border-gray-600 text-white font-light tracking-wide placeholder-gray-500 focus:outline-none focus:border-white transition-colors duration-200"
                 required
               />
             </div>
             
             {isSignUp && (
-              <div className="mb-6">
-                <label className="block text-black mb-2" htmlFor="confirmPassword">
+              <div>
+                <label className="block text-gray-300 text-sm font-light tracking-wide mb-3 uppercase" htmlFor="confirmPassword">
                   {t.confirmPassword || 'Confirm Password'}
                 </label>
                 <input
@@ -218,18 +206,18 @@ try {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="text-black w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-transparent border border-gray-600 text-white font-light tracking-wide placeholder-gray-500 focus:outline-none focus:border-white transition-colors duration-200"
                   required
                 />
               </div>
             )}
             
             {!isSignUp && (
-              <div className="mb-6 text-right">
+              <div className="text-right pt-2">
                 <button
                   type="button"
                   onClick={() => router.push('/auth/forgot-password')}
-                  className="text-[#375171] hover:underline text-sm cursor-pointer"
+                  className="text-gray-400 hover:text-white text-xs font-light tracking-wide uppercase transition-colors duration-200 cursor-pointer"
                 >
                   {t.forgotPassword || 'Forgot Password?'}
                 </button>
@@ -239,36 +227,50 @@ try {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-[#D22E26] text-white py-2 px-4 rounded-lg hover:bg-[#2d4360] transition duration-200 cursor-pointer mb-4 ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
+              className={`w-full bg-white text-black py-4 px-6 text-sm font-light tracking-wider uppercase hover:bg-gray-200 transition-all duration-200 cursor-pointer border border-white ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]'
               }`}
             >
               {loading ? (
-                t.loading || 'Processing...'
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {t.loading || 'PROCESSING...'}
+                </span>
               ) : isSignUp ? (
-                t.signUp || 'Sign Up'
+                t.signUp || 'CREATE ACCOUNT'
               ) : (
-                t.signIn || 'Sign In'
+                t.signIn || 'SIGN IN'
               )}
             </button>
             
-            <div className="text-center text-gray-600 mt-4">
-              <p className="mb-2">
+            <div className="text-center pt-6 border-t border-gray-700">
+              <p className="text-gray-400 text-sm font-light tracking-wide mb-4">
                 {isSignUp
-                  ? t.alreadyHaveAccount || 'Already have an account?'
-                  : t.dontHaveAccount || "Don't have an account?"}
+                  ? t.alreadyHaveAccount || 'ALREADY HAVE AN ACCOUNT?'
+                  : t.dontHaveAccount || "DON'T HAVE AN ACCOUNT?"}
               </p>
               <button
                 type="button"
                 onClick={toggleFormMode}
-                className="text-[#375171] font-medium hover:underline cursor-pointer"
+                className="text-white font-light tracking-wider text-sm uppercase hover:underline cursor-pointer transition-all duration-200"
               >
-                {isSignUp ? t.signIn : t.signUp || 'Sign Up Now'}
+                {isSignUp ? t.signIn : t.signUp || 'CREATE ACCOUNT'}
               </button>
             </div>
           </form>
+
+          {/* Luxury Brand Elements */}
+          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+            <div className="w-px h-12 bg-gradient-to-b from-gray-600 to-transparent"></div>
+          </div>
         </div>
       </div>
+
+      {/* Background Pattern */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-900/20 via-black to-black pointer-events-none"></div>
     </div>
   );
 }
