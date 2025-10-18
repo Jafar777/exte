@@ -38,44 +38,44 @@ export default function Navbar() {
   );
 
   // Fetch cart data for users only
-const { data: cartData, mutate: mutateCart } = useSWR(
-  session && session.user?.role === 'user' ? '/api/cart' : null,
-  fetcher,
-  { 
-    refreshInterval: 5000,
-    // Add error handling and revalidation on focus
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true
-  }
-);
-
+  const { data: cartData, mutate: mutateCart } = useSWR(
+    session && session.user?.role === 'user' ? '/api/cart' : null,
+    fetcher,
+    { 
+      refreshInterval: 5000,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true
+    }
+  );
 
   const notifications = notificationData?.notifications || [];
   const unreadCount = notificationData?.unreadCount || 0;
-const cartItems = cartData?.items || [];
-const cartTotal = cartData?.total || 0;
-const cartItemCount = cartData?.itemCount || cartItems.reduce((total, item) => total + item.quantity, 0);
+  const cartItems = cartData?.items || [];
+  const cartTotal = cartData?.total || 0;
+  const cartItemCount = cartData?.itemCount || cartItems.reduce((total, item) => total + item.quantity, 0);
 
   
   const isDashboard = pathname?.startsWith('/dashboard');
+  const isProductPage = pathname?.startsWith('/products/');
   const isUser = session?.user?.role === 'user';
 
   useEffect(() => {
-    // Only add scroll effect if not on dashboard
-    if (!isDashboard) {
-      const handleScroll = () => {
-        setIsScrolled(window.scrollY > 50);
-      };
-
-      window.addEventListener("scroll", handleScroll);
-      return () => {
-        window.removeEventListener("scroll", handleScroll);
-      };
-    } else {
-      // Static background for dashboard
+    // For dashboard and product pages, always have solid background
+    if (isDashboard || isProductPage) {
       setIsScrolled(true);
+      return;
     }
-  }, [isDashboard]);
+
+    // For other pages, use scroll behavior
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isDashboard, isProductPage]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -211,7 +211,6 @@ const cartItemCount = cartData?.itemCount || cartItems.reduce((total, item) => t
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Updated navItems with Order Now
   const navItems = [
     { id: "home", label: "Home", href: "/" },
     { id: "latest-collections", label: "Collections", href: "/#collections" },
@@ -219,7 +218,7 @@ const cartItemCount = cartData?.itemCount || cartItems.reduce((total, item) => t
   ];
 
   // Determine navbar background and text colors
-  const navbarBackground = isDashboard 
+  const navbarBackground = isDashboard || isProductPage
     ? "bg-[#f8f6f3] shadow-lg text-gray-800" 
     : isScrolled 
       ? "bg-[#f8f6f3] shadow-lg text-gray-800" 
@@ -368,7 +367,6 @@ const cartItemCount = cartData?.itemCount || cartItems.reduce((total, item) => t
                             >
                               View Cart
                             </Link>
-
                           </div>
                         </div>
                       </>
