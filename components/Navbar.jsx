@@ -57,11 +57,15 @@ export default function Navbar() {
   
   const isDashboard = pathname?.startsWith('/dashboard');
   const isProductPage = pathname?.startsWith('/products/');
+  const isProductsPage = pathname === '/products';
   const isUser = session?.user?.role === 'user';
 
+  // Always show solid background on products and product pages
+  const shouldHaveSolidBackground = isDashboard || isProductPage || isProductsPage;
+
   useEffect(() => {
-    // For dashboard and product pages, always have solid background
-    if (isDashboard || isProductPage) {
+    // For dashboard, products, and product pages, always have solid background
+    if (shouldHaveSolidBackground) {
       setIsScrolled(true);
       return;
     }
@@ -75,7 +79,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [isDashboard, isProductPage]);
+  }, [shouldHaveSolidBackground]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -217,8 +221,8 @@ export default function Navbar() {
     { id: "contacts", label: "Contacts", href: "/#contacts" }
   ];
 
-  // Determine navbar background and text colors
-  const navbarBackground = isDashboard || isProductPage
+  // Always solid background for products and product pages
+  const navbarBackground = shouldHaveSolidBackground
     ? "bg-[#f8f6f3] shadow-lg text-gray-800" 
     : isScrolled 
       ? "bg-[#f8f6f3] shadow-lg text-gray-800" 
@@ -295,12 +299,12 @@ export default function Navbar() {
                       <div className="px-4 py-8 text-center text-gray-500">
                         <FaCartShopping className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</p>
-                        <p className="text-sm text-gray-600">Add some delicious items to get started!</p>
+                        <p className="text-sm text-gray-600">Add some products to get started!</p>
                         <Link 
-                          href="/order-now"
+                          href="/products"
                           className="inline-block mt-4 px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                         >
-                          Browse Restaurants
+                          Browse Products
                         </Link>
                       </div>
                     ) : (
@@ -310,19 +314,19 @@ export default function Navbar() {
                           {cartItems.map((item) => (
                             <MenuItem key={item._id}>
                               <div className="flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors">
-                                {item.dishImage && (
+                                {item.product?.featuredImage && (
                                   <img
-                                    src={item.dishImage}
-                                    alt={item.dishName}
+                                    src={item.product.featuredImage}
+                                    alt={item.product.name}
                                     className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                                   />
                                 )}
                                 <div className="flex-1 min-w-0">
                                   <h4 className="text-sm font-medium text-gray-900 truncate">
-                                    {item.dishName}
+                                    {item.product?.name}
                                   </h4>
                                   <p className="text-sm text-gray-600">${item.price?.toFixed(2)}</p>
-                                  <p className="text-xs text-gray-500">{item.restaurantName}</p>
+                                  <p className="text-xs text-gray-500">Size: {item.size}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   <button

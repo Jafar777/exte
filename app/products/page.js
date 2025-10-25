@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
+import Navbar from '@/components/Navbar';
 
 // ProductsPageContent component that uses useSearchParams
 function ProductsPageContent() {
@@ -11,6 +12,7 @@ function ProductsPageContent() {
   const [subCategories, setSubCategories] = useState([]);
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     subCategory: '',
@@ -168,271 +170,470 @@ function ProductsPageContent() {
     return value && value !== 'newest';
   });
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-light tracking-wider text-gray-900 uppercase">Products</h1>
-              <p className="text-gray-600 mt-2 font-light">
-                Discover our curated collection of premium clothing
-              </p>
-            </div>
-            
-            {/* Search and Sort */}
+  // Mobile Filter Drawer Component
+  const MobileFiltersDrawer = () => (
+    <div className="lg:hidden">
+      {/* Mobile Filter Overlay */}
+      {showMobileFilters && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setShowMobileFilters(false)}
+        />
+      )}
+      
+      {/* Mobile Filter Sidebar */}
+      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ${
+        showMobileFilters ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="p-6 h-full overflow-y-auto">
+          {/* Mobile Filter Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-light tracking-wide text-gray-900">FILTERS</h3>
             <div className="flex items-center space-x-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-900 font-light text-sm w-64"
-                />
-                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              
-              <select
-                value={filters.sort}
-                onChange={(e) => handleFilterChange('sort', e.target.value)}
-                className="px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-900 font-light text-sm"
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm font-light text-gray-500 hover:text-gray-700"
+                >
+                  Clear all
+                </button>
+              )}
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
               >
-                {sortOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
+          </div>
+
+          {/* Mobile Filter Content */}
+          <div className="space-y-8">
+            {/* Categories */}
+            <div>
+              <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">CATEGORIES</h4>
+              <div className="space-y-2">
+                {categories.map(category => (
+                  <label key={category._id} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="category"
+                      value={category._id}
+                      checked={filters.category === category._id}
+                      onChange={(e) => handleFilterChange('category', e.target.value)}
+                      className="text-gray-900 focus:ring-gray-900"
+                    />
+                    <span className="text-sm font-light text-gray-600">{category.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* SubCategories */}
+            {filters.category && (
+              <div>
+                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SUBCATEGORIES</h4>
+                <div className="space-y-2">
+                  {subCategories
+                    .filter(sub => sub.category === filters.category)
+                    .map(subCategory => (
+                      <label key={subCategory._id} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="subCategory"
+                          value={subCategory._id}
+                          checked={filters.subCategory === subCategory._id}
+                          onChange={(e) => handleFilterChange('subCategory', e.target.value)}
+                          className="text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm font-light text-gray-600">{subCategory.name}</span>
+                      </label>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Collections */}
+            <div>
+              <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLLECTIONS</h4>
+              <div className="space-y-2">
+                {collections.map(collection => (
+                  <label key={collection._id} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="collection"
+                      value={collection._id}
+                      checked={filters.collection === collection._id}
+                      onChange={(e) => handleFilterChange('collection', e.target.value)}
+                      className="text-gray-900 focus:ring-gray-900"
+                    />
+                    <span className="text-sm font-light text-gray-600">{collection.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div>
+              <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">PRICE RANGE</h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm font-light text-gray-600">
+                  <span>${filters.priceRange[0]}</span>
+                  <span>${filters.priceRange[1]}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1000"
+                  step="10"
+                  value={filters.priceRange[1]}
+                  onChange={(e) => updateFilters({ priceRange: [filters.priceRange[0], parseInt(e.target.value)] })}
+                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Sizes */}
+            <div>
+              <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SIZES</h4>
+              <div className="grid grid-cols-3 gap-2">
+                {sizeOptions.map(size => (
+                  <label key={size} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value={size}
+                      checked={filters.sizes.includes(size)}
+                      onChange={() => handleArrayFilterChange('sizes', size)}
+                      className="text-gray-900 focus:ring-gray-900"
+                    />
+                    <span className="text-sm font-light text-gray-600">{size}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Colors */}
+            <div>
+              <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLORS</h4>
+              <div className="grid grid-cols-4 gap-3">
+                {colorOptions.map(color => (
+                  <button
+                    key={color.name}
+                    onClick={() => handleArrayFilterChange('colors', color.name)}
+                    className={`w-8 h-8 rounded-full border-2 ${
+                      filters.colors.includes(color.name) ? 'border-gray-900' : 'border-gray-300'
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Apply Filters Button */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <button
+              onClick={() => setShowMobileFilters(false)}
+              className="w-full bg-gray-900 text-white py-3 text-sm font-light tracking-wide hover:bg-gray-800 transition-colors"
+            >
+              APPLY FILTERS
+            </button>
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="sticky top-8 space-y-8">
-              {/* Filter Header */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-light tracking-wide text-gray-900">FILTERS</h3>
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm font-light text-gray-500 hover:text-gray-700"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-
-              {/* Categories */}
+  return (
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      
+      {/* Add top padding to push content below navbar */}
+      <div className="pt-24">
+        {/* Header */}
+        <div className="border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">CATEGORIES</h4>
-                <div className="space-y-2">
-                  {categories.map(category => (
-                    <label key={category._id} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="category"
-                        value={category._id}
-                        checked={filters.category === category._id}
-                        onChange={(e) => handleFilterChange('category', e.target.value)}
-                        className="text-gray-900 focus:ring-gray-900"
-                      />
-                      <span className="text-sm font-light text-gray-600">{category.name}</span>
-                    </label>
-                  ))}
-                </div>
+                <h1 className="text-2xl sm:text-3xl font-light tracking-wider text-gray-900 uppercase">Products</h1>
+                <p className="text-gray-600 mt-1 sm:mt-2 font-light text-sm sm:text-base">
+                  Discover our curated collection of premium clothing
+                </p>
               </div>
-
-              {/* SubCategories */}
-              {filters.category && (
-                <div>
-                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SUBCATEGORIES</h4>
-                  <div className="space-y-2">
-                    {subCategories
-                      .filter(sub => sub.category === filters.category)
-                      .map(subCategory => (
-                        <label key={subCategory._id} className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name="subCategory"
-                            value={subCategory._id}
-                            checked={filters.subCategory === subCategory._id}
-                            onChange={(e) => handleFilterChange('subCategory', e.target.value)}
-                            className="text-gray-900 focus:ring-gray-900"
-                          />
-                          <span className="text-sm font-light text-gray-600">{subCategory.name}</span>
-                        </label>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Collections */}
-              <div>
-                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLLECTIONS</h4>
-                <div className="space-y-2">
-                  {collections.map(collection => (
-                    <label key={collection._id} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="collection"
-                        value={collection._id}
-                        checked={filters.collection === collection._id}
-                        onChange={(e) => handleFilterChange('collection', e.target.value)}
-                        className="text-gray-900 focus:ring-gray-900"
-                      />
-                      <span className="text-sm font-light text-gray-600">{collection.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div>
-                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">PRICE RANGE</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm font-light text-gray-600">
-                    <span>${filters.priceRange[0]}</span>
-                    <span>${filters.priceRange[1]}</span>
-                  </div>
+              
+              {/* Search and Sort - Mobile optimized */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none">
                   <input
-                    type="range"
-                    min="0"
-                    max="1000"
-                    step="10"
-                    value={filters.priceRange[1]}
-                    onChange={(e) => updateFilters({ priceRange: [filters.priceRange[0], parseInt(e.target.value)] })}
-                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    type="text"
+                    placeholder="Search products..."
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-900 font-light text-sm w-full"
                   />
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-              </div>
-
-              {/* Sizes */}
-              <div>
-                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SIZES</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  {sizeOptions.map(size => (
-                    <label key={size} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        value={size}
-                        checked={filters.sizes.includes(size)}
-                        onChange={() => handleArrayFilterChange('sizes', size)}
-                        className="text-gray-900 focus:ring-gray-900"
-                      />
-                      <span className="text-sm font-light text-gray-600">{size}</span>
-                    </label>
+                
+                <select
+                  value={filters.sort}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
+                  className="px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-900 font-light text-sm"
+                >
+                  {sortOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
-                </div>
-              </div>
+                </select>
 
-              {/* Colors */}
-              <div>
-                <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLORS</h4>
-                <div className="grid grid-cols-4 gap-3">
-                  {colorOptions.map(color => (
-                    <button
-                      key={color.name}
-                      onClick={() => handleArrayFilterChange('colors', color.name)}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        filters.colors.includes(color.name) ? 'border-gray-900' : 'border-gray-300'
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="lg:hidden px-4 py-2 border border-gray-900 text-gray-900 font-light text-sm hover:bg-gray-900 hover:text-white transition-colors flex items-center justify-center space-x-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  <span>Filters</span>
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Products Grid */}
-          <div className="flex-1">
-            {/* Results Count */}
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm font-light text-gray-600">
-                {products.length} {products.length === 1 ? 'product' : 'products'} found
-              </p>
-              
-              {/* Active Filters */}
-              {hasActiveFilters && (
-                <div className="flex flex-wrap gap-2">
-                  {filters.category && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
-                      Category: {categories.find(c => c._id === filters.category)?.name}
-                      <button
-                        onClick={() => handleFilterChange('category', '')}
-                        className="ml-2 hover:text-gray-900"
-                      >
-                        ×
-                      </button>
-                    </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Desktop Filters Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block lg:w-64 flex-shrink-0">
+              <div className="sticky top-32 space-y-8">
+                {/* Filter Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-light tracking-wide text-gray-900">FILTERS</h3>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm font-light text-gray-500 hover:text-gray-700"
+                    >
+                      Clear all
+                    </button>
                   )}
-                  
-                  {filters.sizes.map(size => (
-                    <span key={size} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
-                      Size: {size}
-                      <button
-                        onClick={() => handleArrayFilterChange('sizes', size)}
-                        className="ml-2 hover:text-gray-900"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                  
-                  {filters.colors.map(color => (
-                    <span key={color} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
-                      Color: {color}
-                      <button
-                        onClick={() => handleArrayFilterChange('colors', color)}
-                        className="ml-2 hover:text-gray-900"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
                 </div>
-              )}
+
+                {/* Categories */}
+                <div>
+                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">CATEGORIES</h4>
+                  <div className="space-y-2">
+                    {categories.map(category => (
+                      <label key={category._id} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="category"
+                          value={category._id}
+                          checked={filters.category === category._id}
+                          onChange={(e) => handleFilterChange('category', e.target.value)}
+                          className="text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm font-light text-gray-600">{category.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SubCategories */}
+                {filters.category && (
+                  <div>
+                    <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SUBCATEGORIES</h4>
+                    <div className="space-y-2">
+                      {subCategories
+                        .filter(sub => sub.category === filters.category)
+                        .map(subCategory => (
+                          <label key={subCategory._id} className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="subCategory"
+                              value={subCategory._id}
+                              checked={filters.subCategory === subCategory._id}
+                              onChange={(e) => handleFilterChange('subCategory', e.target.value)}
+                              className="text-gray-900 focus:ring-gray-900"
+                            />
+                            <span className="text-sm font-light text-gray-600">{subCategory.name}</span>
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Collections */}
+                <div>
+                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLLECTIONS</h4>
+                  <div className="space-y-2">
+                    {collections.map(collection => (
+                      <label key={collection._id} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="collection"
+                          value={collection._id}
+                          checked={filters.collection === collection._id}
+                          onChange={(e) => handleFilterChange('collection', e.target.value)}
+                          className="text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm font-light text-gray-600">{collection.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div>
+                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">PRICE RANGE</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm font-light text-gray-600">
+                      <span>${filters.priceRange[0]}</span>
+                      <span>${filters.priceRange[1]}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="10"
+                      value={filters.priceRange[1]}
+                      onChange={(e) => updateFilters({ priceRange: [filters.priceRange[0], parseInt(e.target.value)] })}
+                      className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Sizes */}
+                <div>
+                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">SIZES</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {sizeOptions.map(size => (
+                      <label key={size} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          value={size}
+                          checked={filters.sizes.includes(size)}
+                          onChange={() => handleArrayFilterChange('sizes', size)}
+                          className="text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm font-light text-gray-600">{size}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Colors */}
+                <div>
+                  <h4 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLORS</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {colorOptions.map(color => (
+                      <button
+                        key={color.name}
+                        onClick={() => handleArrayFilterChange('colors', color.name)}
+                        className={`w-8 h-8 rounded-full border-2 ${
+                          filters.colors.includes(color.name) ? 'border-gray-900' : 'border-gray-300'
+                        }`}
+                        style={{ backgroundColor: color.hex }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Products Grid */}
-            {loading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-gray-200 aspect-[3/4] mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="flex-1">
+              {/* Results Count and Active Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+                <p className="text-sm font-light text-gray-600">
+                  {products.length} {products.length === 1 ? 'product' : 'products'} found
+                </p>
+                
+                {/* Active Filters */}
+                {hasActiveFilters && (
+                  <div className="flex flex-wrap gap-2">
+                    {filters.category && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
+                        Category: {categories.find(c => c._id === filters.category)?.name}
+                        <button
+                          onClick={() => handleFilterChange('category', '')}
+                          className="ml-2 hover:text-gray-900"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    
+                    {filters.sizes.map(size => (
+                      <span key={size} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
+                        Size: {size}
+                        <button
+                          onClick={() => handleArrayFilterChange('sizes', size)}
+                          className="ml-2 hover:text-gray-900"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    
+                    {filters.colors.map(color => (
+                      <span key={color} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-light bg-gray-100 text-gray-700">
+                        Color: {color}
+                        <button
+                          onClick={() => handleArrayFilterChange('colors', color)}
+                          className="ml-2 hover:text-gray-900"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            ) : products.length > 0 ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {products.map(product => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <p className="text-gray-500 font-light tracking-wide mb-4">No products found matching your criteria</p>
-                <button
-                  onClick={clearFilters}
-                  className="border border-gray-900 px-6 py-3 text-sm font-light tracking-wide text-gray-900 hover:bg-gray-900 hover:text-white transition-colors duration-200"
-                >
-                  CLEAR FILTERS
-                </button>
-              </div>
-            )}
+
+              {/* Products Grid */}
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-gray-200 aspect-[3/4] mb-4 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : products.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {products.map(product => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p className="text-gray-500 font-light tracking-wide mb-4">No products found matching your criteria</p>
+                  <button
+                    onClick={clearFilters}
+                    className="border border-gray-900 px-6 py-3 text-sm font-light tracking-wide text-gray-900 hover:bg-gray-900 hover:text-white transition-colors duration-200"
+                  >
+                    CLEAR FILTERS
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Mobile Filters Drawer */}
+        <MobileFiltersDrawer />
       </div>
     </div>
   );
@@ -442,45 +643,48 @@ function ProductsPageContent() {
 function ProductsLoading() {
   return (
     <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-8 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="h-10 bg-gray-200 rounded w-64 animate-pulse"></div>
-              <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+      <Navbar />
+      <div className="pt-24">
+        <div className="border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="h-8 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="h-10 bg-gray-200 rounded w-64 animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="space-y-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
-                  <div className="space-y-2">
-                    {[...Array(4)].map((_, j) => (
-                      <div key={j} className="h-3 bg-gray-200 rounded animate-pulse"></div>
-                    ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            <div className="lg:w-64 flex-shrink-0 hidden lg:block">
+              <div className="space-y-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    <div className="space-y-2">
+                      {[...Array(4)].map((_, j) => (
+                        <div key={j} className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="flex-1">
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="bg-gray-200 aspect-[3/4] mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))}
+            <div className="flex-1">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-gray-200 aspect-[3/4] mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

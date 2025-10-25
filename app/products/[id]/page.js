@@ -193,7 +193,7 @@ export default function ProductPage() {
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
           <div className="animate-pulse">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
               <div className="space-y-4">
                 <div className="bg-gray-200 aspect-square rounded"></div>
                 <div className="grid grid-cols-4 gap-2">
@@ -259,8 +259,8 @@ export default function ProductPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Product Images */}
             <div>
               {/* Main Image */}
@@ -305,12 +305,12 @@ export default function ProductPage() {
             <div className="space-y-6">
               {/* Product Header */}
               <div>
-                <h1 className="text-3xl font-light tracking-wide text-gray-900 mb-2">
+                <h1 className="text-2xl lg:text-3xl font-light tracking-wide text-gray-900 mb-2">
                   {product.name}
                 </h1>
 
-                <div className="flex items-center space-x-4 mb-4">
-                  <p className="text-2xl font-light text-gray-900">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+                  <p className="text-xl lg:text-2xl font-light text-gray-900">
                     ${product.price}
                   </p>
                   {product.originalPrice && product.originalPrice > product.price && (
@@ -318,7 +318,7 @@ export default function ProductPage() {
                       <p className="text-lg text-gray-400 line-through font-light">
                         ${product.originalPrice}
                       </p>
-                      <span className="bg-red-500 text-white px-2 py-1 text-xs font-light tracking-wide">
+                      <span className="bg-red-500 text-white px-2 py-1 text-xs font-light tracking-wide w-fit">
                         SAVE ${product.originalPrice - product.price}
                       </span>
                     </>
@@ -326,7 +326,7 @@ export default function ProductPage() {
                 </div>
 
                 {/* Rating and Likes */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center space-x-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
@@ -348,7 +348,7 @@ export default function ProductPage() {
                   {/* Like Button */}
                   <button
                     onClick={handleLike}
-                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-red-500 transition-colors"
+                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-red-500 transition-colors w-fit"
                   >
                     {isLiked ? (
                       <FaHeart className="w-5 h-5 text-red-500" />
@@ -372,7 +372,7 @@ export default function ProductPage() {
               {product.colors && product.colors.length > 0 && (
                 <div>
                   <h3 className="text-sm font-light text-gray-700 mb-3 tracking-wide">COLOR</h3>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-wrap gap-3">
                     {product.colors.map((color) => (
                       <button
                         key={color.name}
@@ -397,7 +397,7 @@ export default function ProductPage() {
                       Size Guide
                     </button>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                     {availableSizes.map((size) => (
                       <button
                         key={size.size}
@@ -416,20 +416,20 @@ export default function ProductPage() {
 
               {/* Quantity and Add to Cart */}
               <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <div className="w-full sm:w-auto">
                     <label className="text-sm font-light text-gray-700 mb-2 block tracking-wide">QUANTITY</label>
-                    <div className="flex border border-gray-300">
+                    <div className="flex border border-gray-300 w-full sm:w-32">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-light"
+                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-light flex-1"
                       >
                         -
                       </button>
-                      <span className="px-4 py-2 text-gray-900 font-light">{quantity}</span>
+                      <span className="px-4 py-2 text-gray-900 font-light flex-1 text-center">{quantity}</span>
                       <button
                         onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-light"
+                        className="px-4 py-2 text-gray-600 hover:text-gray-900 font-light flex-1"
                       >
                         +
                       </button>
@@ -450,7 +450,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                {/* Secondary Actions - Replaced with Heart Button */}
+                {/* Secondary Actions */}
                 <div className="flex space-x-4">
                   <button
                     onClick={handleLike}
@@ -504,13 +504,13 @@ export default function ProductPage() {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div className="mt-16 border-t border-gray-200 pt-16">
-              <h2 className="text-2xl font-light tracking-wide text-gray-900 mb-8">YOU MIGHT ALSO LIKE</h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="mt-12 lg:mt-16 border-t border-gray-200 pt-12 lg:pt-16">
+              <h2 className="text-xl lg:text-2xl font-light tracking-wide text-gray-900 mb-6 lg:mb-8">YOU MIGHT ALSO LIKE</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {relatedProducts.slice(0, 4).map((relatedProduct) => (
                   <div key={relatedProduct._id} className="group">
                     <Link href={`/products/${relatedProduct._id}`}>
-                      <div className="relative bg-gray-100 aspect-[3/4] mb-4">
+                      <div className="relative bg-gray-100 aspect-[3/4] mb-3 lg:mb-4">
                         {relatedProduct.featuredImage && (
                           <Image
                             src={relatedProduct.featuredImage}
@@ -521,7 +521,7 @@ export default function ProductPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-light text-gray-900 text-sm tracking-wide mb-1">
+                        <h3 className="font-light text-gray-900 text-sm tracking-wide mb-1 line-clamp-1">
                           {relatedProduct.name}
                         </h3>
                         <p className="text-gray-600 font-light text-sm">
@@ -537,17 +537,17 @@ export default function ProductPage() {
         </div>
         
         {/* Reviews Section */}
-        <div className="mt-16 border-t border-gray-200 pt-16">
+        <div className="mt-12 lg:mt-16 border-t border-gray-200 pt-12 lg:pt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-light tracking-wide text-gray-900">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 lg:mb-8 gap-4">
+              <h2 className="text-xl lg:text-2xl font-light tracking-wide text-gray-900">
                 CUSTOMER REVIEWS ({reviews.length})
               </h2>
               
               {/* Overall Rating Summary */}
               {ratingData.average > 0 && (
                 <div className="text-center">
-                  <div className="text-3xl font-light text-gray-900">{ratingData.average}</div>
+                  <div className="text-2xl lg:text-3xl font-light text-gray-900">{ratingData.average}</div>
                   <div className="flex justify-center mb-1">
                     {[...Array(5)].map((_, i) => (
                       <svg
@@ -584,25 +584,25 @@ export default function ProductPage() {
                 )}
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-6 lg:space-y-8">
                 {reviews.map((review) => (
-                  <div key={review._id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                  <div key={review._id} className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6 hover:shadow-sm transition-shadow">
                     {/* Review Header */}
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-4 gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
+                        <div className="flex items-start space-x-3">
                           {/* User Avatar */}
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-gray-600 text-sm font-light">
                               {review.user.firstName?.[0]}{review.user.lastName?.[0]}
                             </span>
                           </div>
                           
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-light text-gray-900 text-lg">
                               {review.title || `Review by ${review.user.firstName}`}
                             </h4>
-                            <div className="flex items-center space-x-2 mt-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mt-1">
                               {/* Star Rating */}
                               <div className="flex items-center space-x-1">
                                 {[...Array(5)].map((_, i) => (
@@ -653,13 +653,13 @@ export default function ProductPage() {
                     )}
 
                     {/* Review Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-100 gap-2">
                       <span className="text-sm text-gray-500 font-light">
                         By {review.user.firstName} {review.user.lastName}
                       </span>
                       
                       {/* Helpful Button */}
-                      <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                      <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors w-fit">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                         </svg>
