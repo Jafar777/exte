@@ -81,64 +81,56 @@ export default function CollectionsPage() {
   };
 
   // Product Management
-  // In the handleProductSubmit function, update the data preparation
-const handleProductSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  
-  // Frontend validation
-  if (productForm.images.length === 0) {
-    setMessage({ type: 'error', text: 'At least one product image is required' });
-    setLoading(false);
-    return;
-  }
-
-  if (!productForm.category) {
-    setMessage({ type: 'error', text: 'Category is required' });
-    setLoading(false);
-    return;
-  }
-
-  try {
-    // Prepare data for API
-    const productData = {
-      ...productForm,
-      // Remove empty optional fields
-      subCategory: productForm.subCategory || undefined,
-      collection: productForm.collection || undefined,
-      // Convert tags string to array
-      tags: productForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      // Ensure prices are numbers
-      price: parseFloat(productForm.price),
-      originalPrice: productForm.originalPrice ? parseFloat(productForm.originalPrice) : undefined,
-      // Set featured image to first image if not set
-      featuredImage: productForm.images[0]
-    };
-
-    const response = await fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData)
-    });
-
-    if (response.ok) {
-      setMessage({ type: 'success', text: 'Product created successfully!' });
-      // Reset form
-      setProductForm({
-        name: '', description: '', price: '', originalPrice: '', category: '', 
-        subCategory: '', collection: '', sizes: [], colors: [], images: [], tags: '', isFeatured: false
-      });
-      fetchData();
-    } else {
-      const error = await response.json();
-      setMessage({ type: 'error', text: error.error || 'Failed to create product' });
+  const handleProductSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    if (productForm.images.length === 0) {
+      setMessage({ type: 'error', text: 'At least one product image is required' });
+      setLoading(false);
+      return;
     }
-  } catch (error) {
-    setMessage({ type: 'error', text: 'Network error occurred' });
-  } finally {
-    setLoading(false);
-  }
-};
+
+    if (!productForm.category) {
+      setMessage({ type: 'error', text: 'Category is required' });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const productData = {
+        ...productForm,
+        subCategory: productForm.subCategory || undefined,
+        collection: productForm.collection || undefined,
+        tags: productForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        price: parseFloat(productForm.price),
+        originalPrice: productForm.originalPrice ? parseFloat(productForm.originalPrice) : undefined,
+        featuredImage: productForm.images[0]
+      };
+
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Product created successfully!' });
+        setProductForm({
+          name: '', description: '', price: '', originalPrice: '', category: '', 
+          subCategory: '', collection: '', sizes: [], colors: [], images: [], tags: '', isFeatured: false
+        });
+        fetchData();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to create product' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error occurred' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Category Management
   const handleCategorySubmit = async (e) => {
@@ -303,23 +295,25 @@ const handleProductSubmit = async (e) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4 sm:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-light tracking-wider text-gray-900 uppercase">Product Management</h1>
-        <p className="text-gray-600 mt-2 font-light">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-light tracking-wider text-gray-900 uppercase">
+          Product Management
+        </h1>
+        <p className="text-gray-600 mt-2 font-light text-sm sm:text-base">
           Manage products, categories, subcategories, and collections
         </p>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="flex space-x-8">
+      {/* Tab Navigation - Horizontal scroll on mobile */}
+      <div className="border-b border-gray-200 mb-6 sm:mb-8">
+        <nav className="flex space-x-4 sm:space-x-8 overflow-x-auto pb-2 -mb-px">
           {['products', 'categories', 'subcategories', 'collections'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-light text-sm tracking-wide transition-colors duration-200 ${
+              className={`flex-shrink-0 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-light text-xs sm:text-sm tracking-wide transition-colors duration-200 whitespace-nowrap ${
                 activeTab === tab
                   ? 'border-gray-900 text-gray-900'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -332,52 +326,54 @@ const handleProductSubmit = async (e) => {
       </div>
 
       {message.text && (
-        <div className={`mb-8 p-4 border-l-4 ${
+        <div className={`mb-6 sm:mb-8 p-4 border-l-4 ${
           message.type === 'success' 
             ? 'bg-green-50 text-green-800 border-green-400' 
             : 'bg-red-50 text-red-800 border-red-400'
         }`}>
-          <span className="font-medium">{message.text}</span>
+          <span className="font-medium text-sm sm:text-base">{message.text}</span>
         </div>
       )}
 
       {/* Products Tab */}
       {activeTab === 'products' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Product Form */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">ADD NEW PRODUCT</h2>
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              ADD NEW PRODUCT
+            </h2>
             
-            <form onSubmit={handleProductSubmit} className="space-y-6">
+            <form onSubmit={handleProductSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   PRODUCT NAME
                 </label>
                 <input
                   type="text"
                   value={productForm.name}
                   onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   DESCRIPTION
                 </label>
                 <textarea
                   value={productForm.description}
                   onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
-                  rows="4"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  rows="3"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     PRICE ($)
                   </label>
                   <input
@@ -385,13 +381,13 @@ const handleProductSubmit = async (e) => {
                     step="0.01"
                     value={productForm.price}
                     onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     ORIGINAL PRICE ($)
                   </label>
                   <input
@@ -399,21 +395,21 @@ const handleProductSubmit = async (e) => {
                     step="0.01"
                     value={productForm.originalPrice}
                     onChange={(e) => setProductForm(prev => ({ ...prev, originalPrice: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               {/* Category Selection */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     CATEGORY
                   </label>
                   <select
                     value={productForm.category}
                     onChange={(e) => setProductForm(prev => ({ ...prev, category: e.target.value, subCategory: '' }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                     required
                   >
                     <option value="">Select Category</option>
@@ -424,13 +420,13 @@ const handleProductSubmit = async (e) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     SUBCATEGORY
                   </label>
                   <select
                     value={productForm.subCategory}
                     onChange={(e) => setProductForm(prev => ({ ...prev, subCategory: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   >
                     <option value="">Select Subcategory</option>
                     {subCategories
@@ -444,13 +440,13 @@ const handleProductSubmit = async (e) => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   COLLECTION
                 </label>
                 <select
                   value={productForm.collection}
                   onChange={(e) => setProductForm(prev => ({ ...prev, collection: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                 >
                   <option value="">Select Collection</option>
                   {collections.map(col => (
@@ -461,14 +457,14 @@ const handleProductSubmit = async (e) => {
 
               {/* Sizes Management */}
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   SIZES & STOCK
                 </label>
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
                   <select
                     value={currentSize.size}
                     onChange={(e) => setCurrentSize(prev => ({ ...prev, size: e.target.value }))}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   >
                     <option value="">Select Size</option>
                     {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '36', '38', '40', '42', '44', '46'].map(size => (
@@ -480,24 +476,24 @@ const handleProductSubmit = async (e) => {
                     placeholder="Stock"
                     value={currentSize.stock}
                     onChange={(e) => setCurrentSize(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
-                    className="w-24 px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full sm:w-24 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   />
                   <button
                     type="button"
                     onClick={addSize}
-                    className="px-4 py-3 border border-gray-900 bg-white text-gray-900 font-light text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200"
+                    className="px-4 py-2 sm:py-3 border border-gray-900 bg-white text-gray-900 font-light text-xs sm:text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200"
                   >
                     ADD
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {productForm.sizes.map((size, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-2">
-                      <span className="text-sm font-light">{size.size} (Stock: {size.stock})</span>
+                    <div key={index} className="flex items-center gap-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2">
+                      <span className="text-xs sm:text-sm font-light">{size.size} (Stock: {size.stock})</span>
                       <button
                         type="button"
                         onClick={() => removeSize(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 text-sm"
                       >
                         ×
                       </button>
@@ -508,43 +504,45 @@ const handleProductSubmit = async (e) => {
 
               {/* Colors Management */}
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   COLORS
                 </label>
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
                   <input
                     type="text"
                     placeholder="Color Name"
                     value={currentColor.name}
                     onChange={(e) => setCurrentColor(prev => ({ ...prev, name: e.target.value }))}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   />
-                  <input
-                    type="color"
-                    value={currentColor.hex}
-                    onChange={(e) => setCurrentColor(prev => ({ ...prev, hex: e.target.value }))}
-                    className="w-16 px-2 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={addColor}
-                    className="px-4 py-3 border border-gray-900 bg-white text-gray-900 font-light text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200"
-                  >
-                    ADD
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={currentColor.hex}
+                      onChange={(e) => setCurrentColor(prev => ({ ...prev, hex: e.target.value }))}
+                      className="w-10 h-10 sm:w-16 sm:h-12 px-1 sm:px-2 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={addColor}
+                      className="flex-1 sm:flex-none px-4 py-2 sm:py-3 border border-gray-900 bg-white text-gray-900 font-light text-xs sm:text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200"
+                    >
+                      ADD
+                    </button>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
                   {productForm.colors.map((color, index) => (
-                    <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-2">
+                    <div key={index} className="flex items-center gap-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2">
                       <div 
-                        className="w-4 h-4 rounded-full border border-gray-300"
+                        className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-gray-300"
                         style={{ backgroundColor: color.hex }}
                       ></div>
-                      <span className="text-sm font-light">{color.name}</span>
+                      <span className="text-xs sm:text-sm font-light">{color.name}</span>
                       <button
                         type="button"
                         onClick={() => removeColor(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 text-sm"
                       >
                         ×
                       </button>
@@ -555,7 +553,7 @@ const handleProductSubmit = async (e) => {
 
               {/* Product Images */}
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   PRODUCT IMAGES
                 </label>
                 <CldUploadWidget
@@ -566,13 +564,13 @@ const handleProductSubmit = async (e) => {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="w-full px-6 py-3 border border-gray-900 bg-white text-gray-900 font-light text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-4"
+                      className="w-full px-4 sm:px-6 py-2 sm:py-3 border border-gray-900 bg-white text-gray-900 font-light text-xs sm:text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-3 sm:mb-4"
                     >
                       UPLOAD PRODUCT IMAGES
                     </button>
                   )}
                 </CldUploadWidget>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   {productForm.images.map((image, index) => (
                     <div key={index} className="relative">
                       <Image
@@ -580,12 +578,12 @@ const handleProductSubmit = async (e) => {
                         alt={`Product ${index + 1}`}
                         width={80}
                         height={80}
-                        className="object-cover border border-gray-300"
+                        className="object-cover border border-gray-300 w-full h-auto"
                       />
                       <button
                         type="button"
                         onClick={() => removeImage(index, 'product')}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs"
+                        className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 text-xs"
                       >
                         ×
                       </button>
@@ -595,7 +593,7 @@ const handleProductSubmit = async (e) => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   TAGS (comma separated)
                 </label>
                 <input
@@ -603,7 +601,7 @@ const handleProductSubmit = async (e) => {
                   value={productForm.tags}
                   onChange={(e) => setProductForm(prev => ({ ...prev, tags: e.target.value }))}
                   placeholder="summer, casual, cotton"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                 />
               </div>
 
@@ -615,7 +613,7 @@ const handleProductSubmit = async (e) => {
                   onChange={(e) => setProductForm(prev => ({ ...prev, isFeatured: e.target.checked }))}
                   className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
                 />
-                <label htmlFor="isFeatured" className="text-sm font-light text-gray-700">
+                <label htmlFor="isFeatured" className="text-xs sm:text-sm font-light text-gray-700">
                   FEATURED PRODUCT
                 </label>
               </div>
@@ -623,7 +621,7 @@ const handleProductSubmit = async (e) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900"
+                className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
                 {loading ? 'CREATING PRODUCT...' : 'CREATE PRODUCT'}
               </button>
@@ -631,29 +629,33 @@ const handleProductSubmit = async (e) => {
           </div>
 
           {/* Products List */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">PRODUCTS ({products.length})</h2>
-            <div className="space-y-4 max-h-[800px] overflow-y-auto">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              PRODUCTS ({products.length})
+            </h2>
+            <div className="space-y-3 sm:space-y-4 max-h-[600px] overflow-y-auto">
               {products.map(product => (
-                <div key={product._id} className="border border-gray-200 p-4">
-                  <div className="flex items-start gap-4">
+                <div key={product._id} className="border border-gray-200 p-3 sm:p-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     {product.featuredImage && (
-                      <Image
-                        src={product.featuredImage}
-                        alt={product.name}
-                        width={80}
-                        height={80}
-                        className="object-cover border border-gray-300"
-                      />
+                      <div className="flex-shrink-0">
+                        <Image
+                          src={product.featuredImage}
+                          alt={product.name}
+                          width={60}
+                          height={60}
+                          className="object-cover border border-gray-300"
+                        />
+                      </div>
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-light text-gray-900">{product.name}</h3>
-                      <p className="text-sm text-gray-600 font-light">${product.price}</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{product.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light">${product.price}</p>
                       <p className="text-xs text-gray-500 font-light">
                         {product.sizes?.length || 0} sizes • {product.colors?.length || 0} colors
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <span className={`text-xs px-2 py-1 ${
                         product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
@@ -670,39 +672,41 @@ const handleProductSubmit = async (e) => {
 
       {/* Categories Tab */}
       {activeTab === 'categories' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Category Form */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">ADD NEW CATEGORY</h2>
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              ADD NEW CATEGORY
+            </h2>
             
-            <form onSubmit={handleCategorySubmit} className="space-y-6">
+            <form onSubmit={handleCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   CATEGORY NAME
                 </label>
                 <input
                   type="text"
                   value={categoryForm.name}
                   onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   DESCRIPTION
                 </label>
                 <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm(prev => ({ ...prev, description: e.target.value }))}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   CATEGORY IMAGE
                 </label>
                 <CldUploadWidget
@@ -713,27 +717,29 @@ const handleProductSubmit = async (e) => {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="w-full px-6 py-3 border border-gray-900 bg-white text-gray-900 font-light text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-4"
+                      className="w-full px-4 sm:px-6 py-2 sm:py-3 border border-gray-900 bg-white text-gray-900 font-light text-xs sm:text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-3 sm:mb-4"
                     >
                       UPLOAD CATEGORY IMAGE
                     </button>
                   )}
                 </CldUploadWidget>
                 {categoryForm.image && (
-                  <Image
-                    src={categoryForm.image}
-                    alt="Category"
-                    width={100}
-                    height={100}
-                    className="object-cover border border-gray-300"
-                  />
+                  <div className="mt-2">
+                    <Image
+                      src={categoryForm.image}
+                      alt="Category"
+                      width={80}
+                      height={80}
+                      className="object-cover border border-gray-300"
+                    />
+                  </div>
                 )}
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900"
+                className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
                 {loading ? 'CREATING CATEGORY...' : 'CREATE CATEGORY'}
               </button>
@@ -741,27 +747,31 @@ const handleProductSubmit = async (e) => {
           </div>
 
           {/* Categories List */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">CATEGORIES ({categories.length})</h2>
-            <div className="space-y-4">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              CATEGORIES ({categories.length})
+            </h2>
+            <div className="space-y-3 sm:space-y-4">
               {categories.map(category => (
-                <div key={category._id} className="border border-gray-200 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div key={category._id} className="border border-gray-200 p-3 sm:p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {category.image && (
-                      <Image
-                        src={category.image}
-                        alt={category.name}
-                        width={60}
-                        height={60}
-                        className="object-cover border border-gray-300"
-                      />
+                      <div className="flex-shrink-0">
+                        <Image
+                          src={category.image}
+                          alt={category.name}
+                          width={50}
+                          height={50}
+                          className="object-cover border border-gray-300"
+                        />
+                      </div>
                     )}
-                    <div>
-                      <h3 className="font-light text-gray-900">{category.name}</h3>
-                      <p className="text-sm text-gray-600 font-light">{category.description}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{category.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{category.description}</p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 ${
+                  <span className={`text-xs px-2 py-1 flex-shrink-0 ${
                     category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
                     {category.isActive ? 'Active' : 'Inactive'}
@@ -775,20 +785,22 @@ const handleProductSubmit = async (e) => {
 
       {/* SubCategories Tab */}
       {activeTab === 'subcategories' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* SubCategory Form */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">ADD NEW SUBCATEGORY</h2>
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              ADD NEW SUBCATEGORY
+            </h2>
             
-            <form onSubmit={handleSubCategorySubmit} className="space-y-6">
+            <form onSubmit={handleSubCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   PARENT CATEGORY
                 </label>
                 <select
                   value={subCategoryForm.category}
                   onChange={(e) => setSubCategoryForm(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 >
                   <option value="">Select Parent Category</option>
@@ -799,34 +811,34 @@ const handleProductSubmit = async (e) => {
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   SUBCATEGORY NAME
                 </label>
                 <input
                   type="text"
                   value={subCategoryForm.name}
                   onChange={(e) => setSubCategoryForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   DESCRIPTION
                 </label>
                 <textarea
                   value={subCategoryForm.description}
                   onChange={(e) => setSubCategoryForm(prev => ({ ...prev, description: e.target.value }))}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900"
+                className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
                 {loading ? 'CREATING SUBCATEGORY...' : 'CREATE SUBCATEGORY'}
               </button>
@@ -834,22 +846,24 @@ const handleProductSubmit = async (e) => {
           </div>
 
           {/* SubCategories List */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">SUBCATEGORIES ({subCategories.length})</h2>
-            <div className="space-y-4">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              SUBCATEGORIES ({subCategories.length})
+            </h2>
+            <div className="space-y-3 sm:space-y-4">
               {subCategories.map(subCategory => {
                 const parentCategory = categories.find(cat => cat._id === subCategory.category);
                 return (
-                  <div key={subCategory._id} className="border border-gray-200 p-4">
+                  <div key={subCategory._id} className="border border-gray-200 p-3 sm:p-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-light text-gray-900">{subCategory.name}</h3>
-                        <p className="text-sm text-gray-600 font-light">
+                      <div className="min-w-0">
+                        <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{subCategory.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-600 font-light">
                           Parent: {parentCategory?.name || 'Unknown'}
                         </p>
-                        <p className="text-sm text-gray-600 font-light">{subCategory.description}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{subCategory.description}</p>
                       </div>
-                      <span className={`text-xs px-2 py-1 ${
+                      <span className={`text-xs px-2 py-1 flex-shrink-0 ${
                         subCategory.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {subCategory.isActive ? 'Active' : 'Inactive'}
@@ -865,46 +879,48 @@ const handleProductSubmit = async (e) => {
 
       {/* Collections Tab */}
       {activeTab === 'collections' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Collection Form */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">ADD NEW COLLECTION</h2>
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              ADD NEW COLLECTION
+            </h2>
             
-            <form onSubmit={handleCollectionSubmit} className="space-y-6">
+            <form onSubmit={handleCollectionSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   COLLECTION NAME
                 </label>
                 <input
                   type="text"
                   value={collectionForm.name}
                   onChange={(e) => setCollectionForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   DESCRIPTION
                 </label>
                 <textarea
                   value={collectionForm.description}
                   onChange={(e) => setCollectionForm(prev => ({ ...prev, description: e.target.value }))}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     SEASON
                   </label>
                   <select
                     value={collectionForm.season}
                     onChange={(e) => setCollectionForm(prev => ({ ...prev, season: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   >
                     {['Spring', 'Summer', 'Fall', 'Winter', 'All Season', 'Holiday', 'Resort'].map(season => (
                       <option key={season} value={season}>{season}</option>
@@ -913,20 +929,20 @@ const handleProductSubmit = async (e) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                  <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                     YEAR
                   </label>
                   <input
                     type="number"
                     value={collectionForm.year}
                     onChange={(e) => setCollectionForm(prev => ({ ...prev, year: parseInt(e.target.value) }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-light text-gray-700 mb-2 tracking-wide">
+                <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
                   COLLECTION IMAGE
                 </label>
                 <CldUploadWidget
@@ -937,20 +953,22 @@ const handleProductSubmit = async (e) => {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="w-full px-6 py-3 border border-gray-900 bg-white text-gray-900 font-light text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-4"
+                      className="w-full px-4 sm:px-6 py-2 sm:py-3 border border-gray-900 bg-white text-gray-900 font-light text-xs sm:text-sm tracking-wide hover:bg-gray-900 hover:text-white transition-colors duration-200 mb-3 sm:mb-4"
                     >
                       UPLOAD COLLECTION IMAGE
                     </button>
                   )}
                 </CldUploadWidget>
                 {collectionForm.image && (
-                  <Image
-                    src={collectionForm.image}
-                    alt="Collection"
-                    width={100}
-                    height={100}
-                    className="object-cover border border-gray-300"
-                  />
+                  <div className="mt-2">
+                    <Image
+                      src={collectionForm.image}
+                      alt="Collection"
+                      width={80}
+                      height={80}
+                      className="object-cover border border-gray-300"
+                    />
+                  </div>
                 )}
               </div>
 
@@ -962,7 +980,7 @@ const handleProductSubmit = async (e) => {
                   onChange={(e) => setCollectionForm(prev => ({ ...prev, featured: e.target.checked }))}
                   className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
                 />
-                <label htmlFor="featured" className="text-sm font-light text-gray-700">
+                <label htmlFor="featured" className="text-xs sm:text-sm font-light text-gray-700">
                   FEATURED COLLECTION
                 </label>
               </div>
@@ -970,7 +988,7 @@ const handleProductSubmit = async (e) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900"
+                className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
                 {loading ? 'CREATING COLLECTION...' : 'CREATE COLLECTION'}
               </button>
@@ -978,30 +996,34 @@ const handleProductSubmit = async (e) => {
           </div>
 
           {/* Collections List */}
-          <div className="bg-white p-6 border border-gray-200">
-            <h2 className="text-xl font-light tracking-wide text-gray-900 mb-6">COLLECTIONS ({collections.length})</h2>
-            <div className="space-y-4">
+          <div className="bg-white p-4 sm:p-6 border border-gray-200">
+            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
+              COLLECTIONS ({collections.length})
+            </h2>
+            <div className="space-y-3 sm:space-y-4">
               {collections.map(collection => (
-                <div key={collection._id} className="border border-gray-200 p-4">
-                  <div className="flex items-center gap-4">
+                <div key={collection._id} className="border border-gray-200 p-3 sm:p-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     {collection.image && (
-                      <Image
-                        src={collection.image}
-                        alt={collection.name}
-                        width={60}
-                        height={60}
-                        className="object-cover border border-gray-300"
-                      />
+                      <div className="flex-shrink-0">
+                        <Image
+                          src={collection.image}
+                          alt={collection.name}
+                          width={50}
+                          height={50}
+                          className="object-cover border border-gray-300"
+                        />
+                      </div>
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-light text-gray-900">{collection.name}</h3>
-                      <p className="text-sm text-gray-600 font-light">{collection.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{collection.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{collection.description}</p>
                       <p className="text-xs text-gray-500 font-light">
                         {collection.season} {collection.year}
                         {collection.featured && ' • Featured'}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 ${
+                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${
                       collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
                       {collection.isActive ? 'Active' : 'Inactive'}
