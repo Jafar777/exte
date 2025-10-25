@@ -13,141 +13,166 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-const fetchUsers = async () => {
-  try {
-    const response = await fetch('/api/auth/users');
-    if (!response.ok) {
-      // Handle HTTP errors (4xx, 5xx) here
-      throw new Error(`HTTP error! status: ${response.status}`);
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/auth/users');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setUsers(data.users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
     }
-    const data = await response.json();
-    setUsers(data.users);
-  } catch (error) {
-    console.error('Error fetching users:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-const updateUserRole = async (userId, newRole) => {
-  setUpdating(userId);
-  try {
-    const response = await fetch('/api/auth/users', { // ← Change this line
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId, role: newRole }),
-    });
+  const updateUserRole = async (userId, newRole) => {
+    setUpdating(userId);
+    try {
+      const response = await fetch('/api/auth/users', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, role: newRole }),
+      });
 
-    if (response.ok) {
-      // Update local state
-      setUsers(users.map(user => 
-        user._id === userId ? { ...user, role: newRole } : user
-      ));
+      if (response.ok) {
+        setUsers(users.map(user => 
+          user._id === userId ? { ...user, role: newRole } : user
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating user role:', error);
+    } finally {
+      setUpdating(null);
     }
-  } catch (error) {
-    console.error('Error updating user role:', error);
-  } finally {
-    setUpdating(null);
-  }
-};
+  };
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="animate-pulse">Loading users...</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4 sm:py-8">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="animate-pulse font-light">Loading users...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="bg-white rounded-lg shadow-sm p-4 md:p-8">
-              <div className="bg-gradient-to-r from-[#ce5a46] to-[#D22E26] rounded-t-2xl p-6 text-white mb-8">
-        <h1 className="text-3xl font-bold">Users Management</h1>
-        <p className="text-amber-100 mt-2">
-           Welcome to users management, {session?.user?.firstName}!
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4 sm:py-8">
+      {/* Header */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-light tracking-wider text-gray-900 uppercase">
+          Users Management
+        </h1>
+        <p className="text-gray-600 mt-2 font-light text-sm sm:text-base">
+          Welcome to users management, {session?.user?.firstName}!
         </p>
       </div>
 
-        {/* Responsive Users Table */}
+      {/* Users Table */}
+      <div className="bg-white border border-gray-200">
+        {/* Table Header */}
+        <div className="border-b border-gray-200 px-4 sm:px-6 py-4 bg-gray-50">
+          <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900">
+            USERS ({users.length})
+          </h2>
+        </div>
+
+        {/* Responsive Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-light text-gray-500 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-light text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-light text-gray-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-light text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {users.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4 whitespace-nowrap">
+                <tr key={user._id} className="hover:bg-gray-50 transition-colors duration-150">
+                  {/* User Column */}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
+                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10">
                         {user.image ? (
                           <img
-                            className="h-10 w-10 rounded-full"
+                            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover border border-gray-300"
                             src={user.image}
-                            alt=""
+                            alt={`${user.firstName} ${user.lastName}`}
                           />
                         ) : (
-                          <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
+                          <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300">
+                            <span className="text-gray-600 text-xs sm:text-sm font-light">
                               {user.firstName?.[0]}{user.lastName?.[0]}
                             </span>
                           </div>
                         )}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                      <div className="ml-3 sm:ml-4">
+                        <div className="text-sm font-light text-gray-900">
                           {user.firstName} {user.lastName}
+                        </div>
+                        <div className="text-xs text-gray-500 font-light sm:hidden">
+                          {user.email}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+
+                  {/* Email Column - Hidden on mobile */}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-light hidden sm:table-cell">
                     {user.email}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'restaurant_owner' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
+
+                  {/* Role Column */}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 sm:px-3 py-1 text-xs font-light rounded-none border ${
+                      user.role === 'admin' 
+                        ? 'bg-purple-50 text-purple-800 border-purple-200' :
+                      user.role === 'restaurant_owner' 
+                        ? 'bg-green-50 text-green-800 border-green-200' :
+                      user.role === 'chef'
+                        ? 'bg-orange-50 text-orange-800 border-orange-200' :
+                      user.role === 'waiter'
+                        ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                      user.role === 'delivery'
+                        ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                        'bg-gray-50 text-gray-800 border-gray-200'
                     }`}>
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                    <select
-                      value={user.role}
-                      onChange={(e) => updateUserRole(user._id, e.target.value)}
-                      disabled={updating === user._id}
-                      className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                      <option value="restaurant_owner">Restaurant Owner</option>
-                      <option value="chef">Chef</option>
-                      <option value="waiter">Waiter</option>
-                      <option value="delivery">Delivery</option>
-                    </select>
-                    {updating === user._id && (
-                      <span className="ml-2 text-xs text-gray-500">Updating...</span>
-                    )}
+
+                  {/* Actions Column */}
+                  <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={user.role}
+                        onChange={(e) => updateUserRole(user._id, e.target.value)}
+                        disabled={updating === user._id}
+                        className="block w-full sm:w-40 px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      {updating === user._id && (
+                        <span className="text-xs text-gray-500 font-light">Updating...</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -155,11 +180,118 @@ const updateUserRole = async (userId, newRole) => {
           </table>
         </div>
 
+        {/* Empty State */}
         {users.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No users found.
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-2">
+              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
+            </div>
+            <p className="text-gray-500 font-light text-sm">No users found.</p>
           </div>
         )}
+
+        {/* Mobile Card View (Alternative to table for very small screens) */}
+        <div className="sm:hidden border-t border-gray-200">
+          {users.map((user) => (
+            <div key={user._id} className="border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 h-10 w-10">
+                    {user.image ? (
+                      <img
+                        className="h-10 w-10 rounded-full object-cover border border-gray-300"
+                        src={user.image}
+                        alt={`${user.firstName} ${user.lastName}`}
+                      />
+                    ) : (
+                      <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300">
+                        <span className="text-gray-600 text-sm font-light">
+                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-sm font-light text-gray-900">
+                      {user.firstName} {user.lastName}
+                    </div>
+                    <div className="text-xs text-gray-500 font-light">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+                <span className={`inline-flex px-2 py-1 text-xs font-light rounded-none border ${
+                  user.role === 'admin' 
+                    ? 'bg-purple-50 text-purple-800 border-purple-200' :
+                  user.role === 'restaurant_owner' 
+                    ? 'bg-green-50 text-green-800 border-green-200' :
+                    'bg-gray-50 text-gray-800 border-gray-200'
+                }`}>
+                  {user.role}
+                </span>
+              </div>
+              
+              <div className="space-y-2">
+                <select
+                  value={user.role}
+                  onChange={(e) => updateUserRole(user._id, e.target.value)}
+                  disabled={updating === user._id}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-gray-900 transition-colors bg-white font-light text-sm"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="restaurant_owner">Restaurant Owner</option>
+                  <option value="chef">Chef</option>
+                  <option value="waiter">Waiter</option>
+                  <option value="delivery">Delivery</option>
+                </select>
+                {updating === user._id && (
+                  <span className="text-xs text-gray-500 font-light block text-center">Updating role...</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <div className="text-2xl font-light text-gray-900">{users.length}</div>
+          <div className="text-xs text-gray-500 font-light mt-1">TOTAL USERS</div>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <div className="text-2xl font-light text-gray-900">
+            {users.filter(u => u.role === 'admin').length}
+          </div>
+          <div className="text-xs text-gray-500 font-light mt-1">ADMINS</div>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center">
+          <div className="text-2xl font-light text-gray-900">
+            {users.filter(u => u.role === 'user').length}
+          </div>
+          <div className="text-xs text-gray-500 font-light mt-1">USERS</div>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center hidden sm:block">
+          <div className="text-2xl font-light text-gray-900">
+            {users.filter(u => u.role === 'restaurant_owner').length}
+          </div>
+          <div className="text-xs text-gray-500 font-light mt-1">OWNERS</div>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center hidden lg:block">
+          <div className="text-2xl font-light text-gray-900">
+            {users.filter(u => u.role === 'chef').length}
+          </div>
+          <div className="text-xs text-gray-500 font-light mt-1">CHEFS</div>
+        </div>
+        <div className="bg-white border border-gray-200 p-4 text-center hidden lg:block">
+          <div className="text-2xl font-light text-gray-900">
+            {users.filter(u => u.role === 'waiter').length}
+          </div>
+          <div className="text-xs text-gray-500 font-light mt-1">WAITERS</div>
+        </div>
       </div>
     </div>
   );

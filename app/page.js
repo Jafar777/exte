@@ -30,7 +30,6 @@ function HomeContent() {
 
 
 
-          <section id="contacts" className="min-h-screen bg-white pt-16"></section>
           <Footer />
         </main>
       </div>
