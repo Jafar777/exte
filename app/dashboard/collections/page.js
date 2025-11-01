@@ -28,20 +28,20 @@ export default function CollectionsPage() {
     tags: '',
     isFeatured: false
   });
-  
+
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
     image: ''
   });
-  
+
   const [subCategoryForm, setSubCategoryForm] = useState({
     name: '',
     description: '',
     category: '',
     image: ''
   });
-  
+
   const [collectionForm, setCollectionForm] = useState({
     name: '',
     description: '',
@@ -84,7 +84,7 @@ export default function CollectionsPage() {
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     if (productForm.images.length === 0) {
       setMessage({ type: 'error', text: 'At least one product image is required' });
       setLoading(false);
@@ -117,7 +117,7 @@ export default function CollectionsPage() {
       if (response.ok) {
         setMessage({ type: 'success', text: 'Product created successfully!' });
         setProductForm({
-          name: '', description: '', price: '', originalPrice: '', category: '', 
+          name: '', description: '', price: '', originalPrice: '', category: '',
           subCategory: '', collection: '', sizes: [], colors: [], images: [], tags: '', isFeatured: false
         });
         fetchData();
@@ -136,7 +136,7 @@ export default function CollectionsPage() {
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await fetch('/api/categories', {
         method: 'POST',
@@ -163,7 +163,7 @@ export default function CollectionsPage() {
   const handleSubCategorySubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await fetch('/api/subcategories', {
         method: 'POST',
@@ -190,7 +190,7 @@ export default function CollectionsPage() {
   const handleCollectionSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await fetch('/api/collections', {
         method: 'POST',
@@ -200,9 +200,9 @@ export default function CollectionsPage() {
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Collection created successfully!' });
-        setCollectionForm({ 
-          name: '', description: '', image: '', season: 'All Season', 
-          year: new Date().getFullYear(), featured: false 
+        setCollectionForm({
+          name: '', description: '', image: '', season: 'All Season',
+          year: new Date().getFullYear(), featured: false
         });
         fetchData();
       } else {
@@ -254,7 +254,7 @@ export default function CollectionsPage() {
   const handleImageUpload = (result, type) => {
     if (result.event === 'success') {
       const imageUrl = result.info.secure_url;
-      
+
       switch (type) {
         case 'product':
           setProductForm(prev => ({ ...prev, images: [...prev.images, imageUrl] }));
@@ -272,7 +272,7 @@ export default function CollectionsPage() {
           setCurrentColor(prev => ({ ...prev, images: [...prev.images, imageUrl] }));
           break;
       }
-      
+
       setMessage({ type: 'success', text: 'Image uploaded successfully!' });
     }
   };
@@ -313,11 +313,10 @@ export default function CollectionsPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-light text-xs sm:text-sm tracking-wide transition-colors duration-200 whitespace-nowrap ${
-                activeTab === tab
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className={`flex-shrink-0 py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-light text-xs sm:text-sm tracking-wide transition-colors duration-200 whitespace-nowrap ${activeTab === tab
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
             >
               {tab.toUpperCase()}
             </button>
@@ -326,11 +325,10 @@ export default function CollectionsPage() {
       </div>
 
       {message.text && (
-        <div className={`mb-6 sm:mb-8 p-4 border-l-4 ${
-          message.type === 'success' 
-            ? 'bg-green-50 text-green-800 border-green-400' 
-            : 'bg-red-50 text-red-800 border-red-400'
-        }`}>
+        <div className={`mb-6 sm:mb-8 p-4 border-l-4 ${message.type === 'success'
+          ? 'bg-green-50 text-green-800 border-green-400'
+          : 'bg-red-50 text-red-800 border-red-400'
+          }`}>
           <span className="font-medium text-sm sm:text-base">{message.text}</span>
         </div>
       )}
@@ -343,7 +341,7 @@ export default function CollectionsPage() {
             <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
               ADD NEW PRODUCT
             </h2>
-            
+
             <form onSubmit={handleProductSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
@@ -430,7 +428,14 @@ export default function CollectionsPage() {
                   >
                     <option value="">Select Subcategory</option>
                     {subCategories
-                      .filter(sub => sub.category === productForm.category)
+                      .filter(sub => {
+                        // Check if sub.category is an object (populated) or string
+                        if (typeof sub.category === 'object' && sub.category !== null) {
+                          return sub.category._id === productForm.category;
+                        } else {
+                          return sub.category === productForm.category;
+                        }
+                      })
                       .map(sub => (
                         <option key={sub._id} value={sub._id}>{sub.name}</option>
                       ))
@@ -534,7 +539,7 @@ export default function CollectionsPage() {
                 <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
                   {productForm.colors.map((color, index) => (
                     <div key={index} className="flex items-center gap-2 bg-gray-100 px-2 sm:px-3 py-1 sm:py-2">
-                      <div 
+                      <div
                         className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-gray-300"
                         style={{ backgroundColor: color.hex }}
                       ></div>
@@ -656,9 +661,8 @@ export default function CollectionsPage() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <span className={`text-xs px-2 py-1 ${
-                        product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 ${product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
                         {product.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -678,7 +682,7 @@ export default function CollectionsPage() {
             <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
               ADD NEW CATEGORY
             </h2>
-            
+
             <form onSubmit={handleCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
@@ -771,9 +775,8 @@ export default function CollectionsPage() {
                       <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{category.description}</p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 flex-shrink-0 ${
-                    category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`text-xs px-2 py-1 flex-shrink-0 ${category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                     {category.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -791,7 +794,7 @@ export default function CollectionsPage() {
             <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
               ADD NEW SUBCATEGORY
             </h2>
-            
+
             <form onSubmit={handleSubCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
@@ -851,27 +854,23 @@ export default function CollectionsPage() {
               SUBCATEGORIES ({subCategories.length})
             </h2>
             <div className="space-y-3 sm:space-y-4">
-              {subCategories.map(subCategory => {
-                const parentCategory = categories.find(cat => cat._id === subCategory.category);
-                return (
-                  <div key={subCategory._id} className="border border-gray-200 p-3 sm:p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{subCategory.name}</h3>
-                        <p className="text-xs sm:text-sm text-gray-600 font-light">
-                          Parent: {parentCategory?.name || 'Unknown'}
-                        </p>
-                        <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{subCategory.description}</p>
-                      </div>
-                      <span className={`text-xs px-2 py-1 flex-shrink-0 ${
-                        subCategory.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {subCategory.isActive ? 'Active' : 'Inactive'}
-                      </span>
+              {subCategories.map(subCategory => (
+                <div key={subCategory._id} className="border border-gray-200 p-3 sm:p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <h3 className="font-light text-gray-900 text-sm sm:text-base truncate">{subCategory.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light">
+                        Parent: {subCategory.category?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{subCategory.description}</p>
                     </div>
+                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${subCategory.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                      {subCategory.isActive ? 'Active' : 'Inactive'}
+                    </span>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -885,7 +884,7 @@ export default function CollectionsPage() {
             <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
               ADD NEW COLLECTION
             </h2>
-            
+
             <form onSubmit={handleCollectionSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-xs sm:text-sm font-light text-gray-700 mb-2 tracking-wide">
@@ -1023,9 +1022,8 @@ export default function CollectionsPage() {
                         {collection.featured && ' • Featured'}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${
-                      collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
                       {collection.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>

@@ -15,7 +15,11 @@ export async function GET(request) {
     if (activeOnly) query.isActive = true;
     
     const categories = await Category.find(query)
-      .populate('subCategories')
+      .populate({
+        path: 'subCategories',
+        match: activeOnly ? { isActive: true } : {},
+        options: { sort: { order: 1, name: 1 } }
+      })
       .sort({ order: 1, name: 1 });
 
     return new Response(JSON.stringify(categories), {

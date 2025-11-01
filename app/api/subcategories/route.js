@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth/next";
 import authOptions from "@/lib/authOptions";
 import SubCategory from '@/models/SubCategory';
-import Category from '@/models/Category';
+import Category from '@/models/Category'; // Import Category model
 import dbConnect from '@/lib/dbConnect';
 
 export async function GET(request) {
@@ -10,23 +10,22 @@ export async function GET(request) {
     await dbConnect();
     
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
     const activeOnly = searchParams.get('activeOnly') !== 'false';
     
     let query = {};
     if (activeOnly) query.isActive = true;
-    if (category) query.category = category;
     
+    // Populate the category field with category data
     const subCategories = await SubCategory.find(query)
-      .populate('category', 'name')
-      .sort({ order: 1, name: 1 });
+      .populate('category', 'name _id') // Populate with category name and _id
+      .sort({ name: 1 });
 
     return new Response(JSON.stringify(subCategories), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error('SubCategories fetch error:', error);
+    console.error('Subcategories fetch error:', error);
     return new Response(JSON.stringify({ error: 'Failed to fetch subcategories' }), {
       status: 500,
     });
@@ -53,18 +52,10 @@ export async function POST(request) {
     const subCategoryData = await request.json();
     await dbConnect();
 
-    // Validate category exists
-    const categoryExists = await Category.findById(subCategoryData.category);
-    if (!categoryExists) {
-      return new Response(JSON.stringify({ error: 'Category not found' }), {
-        status: 400,
-      });
-    }
-
     // Check if subcategory with same name already exists in this category
-    const existingSubCategory = await SubCategory.findOne({
-      category: subCategoryData.category,
-      name: { $regex: new RegExp(`^${subCategoryData.name}$`, 'i') }
+    const existingSubCategory = await SubCategory.findOne({ 
+      name: { $regex: new RegExp(`^${subCategoryData.name}$`, 'i') },
+      category: subCategoryData.category
     });
     
     if (existingSubCategory) {
@@ -76,21 +67,22 @@ export async function POST(request) {
     const subCategory = new SubCategory(subCategoryData);
     await subCategory.save();
 
-    // Update category's subCategories array
-    await Category.findByIdAndUpdate(
-      subCategoryData.category,
-      { $addToSet: { subCategories: subCategory._id } }
-    );
+    // Populate the category field before sending response
+    await subCategory.populate('category', 'name _id');
 
-    const populatedSubCategory = await SubCategory.findById(subCategory._id)
-      .populate('category', 'name');
-
-    return new Response(JSON.stringify(populatedSubCategory), {
+    return new Response(JSON.stringify(subCategory), {
       status: 201,
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('SubCategory creation error:', error);
+    
+    if (error.code === 11000) {
+      return new Response(JSON.stringify({ error: 'SubCategory with this name already exists' }), {
+        status: 400,
+      });
+    }
+    
     return new Response(JSON.stringify({ error: 'Failed to create subcategory' }), {
       status: 500,
     });

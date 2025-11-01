@@ -1,4 +1,4 @@
-// models/Category.js
+// models/Category.js - Remove the subCategories array or make it a virtual
 import mongoose from 'mongoose';
 
 const CategorySchema = new mongoose.Schema({
@@ -23,13 +23,17 @@ const CategorySchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  },
-  subCategories: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'SubCategory'
-  }]
+  }
+  // Remove the subCategories array from here
 }, {
   timestamps: true
+});
+
+// Add a virtual for subCategories instead
+CategorySchema.virtual('subCategories', {
+  ref: 'SubCategory',
+  localField: '_id',
+  foreignField: 'category'
 });
 
 // Virtual for product count
@@ -39,5 +43,9 @@ CategorySchema.virtual('productCount', {
   foreignField: 'category',
   count: true
 });
+
+// Enable virtuals in JSON output
+CategorySchema.set('toJSON', { virtuals: true });
+CategorySchema.set('toObject', { virtuals: true });
 
 export default mongoose.models.Category || mongoose.model('Category', CategorySchema);

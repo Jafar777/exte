@@ -32,14 +32,6 @@ const SubCategorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Virtual for product count
-SubCategorySchema.virtual('productCount', {
-  ref: 'Product',
-  localField: '_id',
-  foreignField: 'subCategory',
-  count: true
-});
-
 // Index for better performance
 SubCategorySchema.index({ category: 1, isActive: 1 });
 
