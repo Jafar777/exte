@@ -26,20 +26,23 @@ export default function CollectionsPage() {
     colors: [],
     images: [],
     tags: '',
-    isFeatured: false
+    isFeatured: false,
+    isActive: true
   });
 
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
-    image: ''
+    image: '',
+    isActive: true
   });
 
   const [subCategoryForm, setSubCategoryForm] = useState({
     name: '',
     description: '',
     category: '',
-    image: ''
+    image: '',
+    isActive: true
   });
 
   const [collectionForm, setCollectionForm] = useState({
@@ -48,8 +51,15 @@ export default function CollectionsPage() {
     image: '',
     season: 'All Season',
     year: new Date().getFullYear(),
-    featured: false
+    featured: false,
+    isActive: true
   });
+
+  // Edit states
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingSubCategory, setEditingSubCategory] = useState(null);
+  const [editingCollection, setEditingCollection] = useState(null);
 
   // Size and color management
   const [currentSize, setCurrentSize] = useState({ size: '', stock: 0 });
@@ -63,10 +73,10 @@ export default function CollectionsPage() {
     try {
       setLoading(true);
       const [productsRes, categoriesRes, subCategoriesRes, collectionsRes] = await Promise.all([
-        fetch('/api/products'),
-        fetch('/api/categories'),
-        fetch('/api/subcategories'),
-        fetch('/api/collections')
+        fetch('/api/products?activeOnly=false'),
+        fetch('/api/categories?activeOnly=false'),
+        fetch('/api/subcategories?activeOnly=false'),
+        fetch('/api/collections?activeOnly=false')
       ]);
 
       if (productsRes.ok) setProducts(await productsRes.json());
@@ -78,6 +88,33 @@ export default function CollectionsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Reset forms
+  const resetProductForm = () => {
+    setProductForm({
+      name: '', description: '', price: '', originalPrice: '', category: '',
+      subCategory: '', collection: '', sizes: [], colors: [], images: [], tags: '', isFeatured: false, isActive: true
+    });
+    setEditingProduct(null);
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({ name: '', description: '', image: '', isActive: true });
+    setEditingCategory(null);
+  };
+
+  const resetSubCategoryForm = () => {
+    setSubCategoryForm({ name: '', description: '', category: '', image: '', isActive: true });
+    setEditingSubCategory(null);
+  };
+
+  const resetCollectionForm = () => {
+    setCollectionForm({ 
+      name: '', description: '', image: '', season: 'All Season',
+      year: new Date().getFullYear(), featured: false, isActive: true 
+    });
+    setEditingCollection(null);
   };
 
   // Product Management
@@ -108,22 +145,22 @@ export default function CollectionsPage() {
         featuredImage: productForm.images[0]
       };
 
-      const response = await fetch('/api/products', {
-        method: 'POST',
+      const url = editingProduct ? `/api/products/${editingProduct._id}` : '/api/products';
+      const method = editingProduct ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Product created successfully!' });
-        setProductForm({
-          name: '', description: '', price: '', originalPrice: '', category: '',
-          subCategory: '', collection: '', sizes: [], colors: [], images: [], tags: '', isFeatured: false
-        });
+        setMessage({ type: 'success', text: `Product ${editingProduct ? 'updated' : 'created'} successfully!` });
+        resetProductForm();
         fetchData();
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to create product' });
+        setMessage({ type: 'error', text: error.error || `Failed to ${editingProduct ? 'update' : 'create'} product` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error occurred' });
@@ -138,19 +175,22 @@ export default function CollectionsPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/categories', {
-        method: 'POST',
+      const url = editingCategory ? `/api/categories/${editingCategory._id}` : '/api/categories';
+      const method = editingCategory ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(categoryForm)
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Category created successfully!' });
-        setCategoryForm({ name: '', description: '', image: '' });
+        setMessage({ type: 'success', text: `Category ${editingCategory ? 'updated' : 'created'} successfully!` });
+        resetCategoryForm();
         fetchData();
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to create category' });
+        setMessage({ type: 'error', text: error.error || `Failed to ${editingCategory ? 'update' : 'create'} category` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error occurred' });
@@ -165,19 +205,22 @@ export default function CollectionsPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/subcategories', {
-        method: 'POST',
+      const url = editingSubCategory ? `/api/subcategories/${editingSubCategory._id}` : '/api/subcategories';
+      const method = editingSubCategory ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subCategoryForm)
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'SubCategory created successfully!' });
-        setSubCategoryForm({ name: '', description: '', category: '', image: '' });
+        setMessage({ type: 'success', text: `SubCategory ${editingSubCategory ? 'updated' : 'created'} successfully!` });
+        resetSubCategoryForm();
         fetchData();
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to create subcategory' });
+        setMessage({ type: 'error', text: error.error || `Failed to ${editingSubCategory ? 'update' : 'create'} subcategory` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error occurred' });
@@ -192,27 +235,162 @@ export default function CollectionsPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/collections', {
-        method: 'POST',
+      const url = editingCollection ? `/api/collections/${editingCollection._id}` : '/api/collections';
+      const method = editingCollection ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(collectionForm)
       });
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Collection created successfully!' });
-        setCollectionForm({
-          name: '', description: '', image: '', season: 'All Season',
-          year: new Date().getFullYear(), featured: false
-        });
+        setMessage({ type: 'success', text: `Collection ${editingCollection ? 'updated' : 'created'} successfully!` });
+        resetCollectionForm();
         fetchData();
       } else {
         const error = await response.json();
-        setMessage({ type: 'error', text: error.error || 'Failed to create collection' });
+        setMessage({ type: 'error', text: error.error || `Failed to ${editingCollection ? 'update' : 'create'} collection` });
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error occurred' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Edit functions
+  const editProduct = (product) => {
+    setProductForm({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice || '',
+      category: product.category?._id || product.category,
+      subCategory: product.subCategory?._id || product.subCategory,
+      collection: product.collection?._id || product.collection,
+      sizes: product.sizes || [],
+      colors: product.colors || [],
+      images: product.images || [],
+      tags: product.tags?.join(', ') || '',
+      isFeatured: product.isFeatured || false,
+      isActive: product.isActive
+    });
+    setEditingProduct(product);
+  };
+
+  const editCategory = (category) => {
+    setCategoryForm({
+      name: category.name,
+      description: category.description || '',
+      image: category.image || '',
+      isActive: category.isActive
+    });
+    setEditingCategory(category);
+  };
+
+  const editSubCategory = (subCategory) => {
+    setSubCategoryForm({
+      name: subCategory.name,
+      description: subCategory.description || '',
+      category: subCategory.category?._id || subCategory.category,
+      image: subCategory.image || '',
+      isActive: subCategory.isActive
+    });
+    setEditingSubCategory(subCategory);
+  };
+
+  const editCollection = (collection) => {
+    setCollectionForm({
+      name: collection.name,
+      description: collection.description || '',
+      image: collection.image || '',
+      season: collection.season || 'All Season',
+      year: collection.year || new Date().getFullYear(),
+      featured: collection.featured || false,
+      isActive: collection.isActive
+    });
+    setEditingCollection(collection);
+  };
+
+  // Delete functions
+  const deleteProduct = async (productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Product deleted successfully!' });
+        fetchData();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to delete product' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error occurred' });
+    }
+  };
+
+  const deleteCategory = async (categoryId) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Category deleted successfully!' });
+        fetchData();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to delete category' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error occurred' });
+    }
+  };
+
+  const deleteSubCategory = async (subCategoryId) => {
+    if (!confirm('Are you sure you want to delete this subcategory?')) return;
+
+    try {
+      const response = await fetch(`/api/subcategories/${subCategoryId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'SubCategory deleted successfully!' });
+        fetchData();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to delete subcategory' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error occurred' });
+    }
+  };
+
+  const deleteCollection = async (collectionId) => {
+    if (!confirm('Are you sure you want to delete this collection?')) return;
+
+    try {
+      const response = await fetch(`/api/collections/${collectionId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setMessage({ type: 'success', text: 'Collection deleted successfully!' });
+        fetchData();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'error', text: error.error || 'Failed to delete collection' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error occurred' });
     }
   };
 
@@ -294,6 +472,11 @@ export default function CollectionsPage() {
     }
   };
 
+  // Helper function for subcategory category ID
+  const getSubCategoryCategoryId = (subCategory) => {
+    return subCategory.category?._id || subCategory.category;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4 sm:py-8">
       {/* Header */}
@@ -338,9 +521,19 @@ export default function CollectionsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Product Form */}
           <div className="bg-white p-4 sm:p-6 border border-gray-200">
-            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
-              ADD NEW PRODUCT
-            </h2>
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900">
+                {editingProduct ? 'EDIT PRODUCT' : 'ADD NEW PRODUCT'}
+              </h2>
+              {editingProduct && (
+                <button
+                  onClick={resetProductForm}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 font-light text-sm hover:bg-gray-50 transition-colors"
+                >
+                  CANCEL
+                </button>
+              )}
+            </div>
 
             <form onSubmit={handleProductSubmit} className="space-y-4 sm:space-y-6">
               <div>
@@ -428,14 +621,7 @@ export default function CollectionsPage() {
                   >
                     <option value="">Select Subcategory</option>
                     {subCategories
-                      .filter(sub => {
-                        // Check if sub.category is an object (populated) or string
-                        if (typeof sub.category === 'object' && sub.category !== null) {
-                          return sub.category._id === productForm.category;
-                        } else {
-                          return sub.category === productForm.category;
-                        }
-                      })
+                      .filter(sub => getSubCategoryCategoryId(sub) === productForm.category)
                       .map(sub => (
                         <option key={sub._id} value={sub._id}>{sub.name}</option>
                       ))
@@ -623,12 +809,25 @@ export default function CollectionsPage() {
                 </label>
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="productActive"
+                  checked={productForm.isActive}
+                  onChange={(e) => setProductForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                />
+                <label htmlFor="productActive" className="text-xs sm:text-sm font-light text-gray-700">
+                  ACTIVE PRODUCT
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
-                {loading ? 'CREATING PRODUCT...' : 'CREATE PRODUCT'}
+                {loading ? (editingProduct ? 'UPDATING PRODUCT...' : 'CREATING PRODUCT...') : (editingProduct ? 'UPDATE PRODUCT' : 'CREATE PRODUCT')}
               </button>
             </form>
           </div>
@@ -660,11 +859,25 @@ export default function CollectionsPage() {
                         {product.sizes?.length || 0} sizes • {product.colors?.length || 0} colors
                       </p>
                     </div>
-                    <div className="text-right flex-shrink-0">
+                    <div className="text-right flex-shrink-0 space-y-2">
                       <span className={`text-xs px-2 py-1 ${product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                         {product.isActive ? 'Active' : 'Inactive'}
                       </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => editProduct(product)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-light"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteProduct(product._id)}
+                          className="text-red-600 hover:text-red-800 text-sm font-light"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -679,9 +892,19 @@ export default function CollectionsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Category Form */}
           <div className="bg-white p-4 sm:p-6 border border-gray-200">
-            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
-              ADD NEW CATEGORY
-            </h2>
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900">
+                {editingCategory ? 'EDIT CATEGORY' : 'ADD NEW CATEGORY'}
+              </h2>
+              {editingCategory && (
+                <button
+                  onClick={resetCategoryForm}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 font-light text-sm hover:bg-gray-50 transition-colors"
+                >
+                  CANCEL
+                </button>
+              )}
+            </div>
 
             <form onSubmit={handleCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
@@ -740,12 +963,25 @@ export default function CollectionsPage() {
                 )}
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="categoryActive"
+                  checked={categoryForm.isActive}
+                  onChange={(e) => setCategoryForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                />
+                <label htmlFor="categoryActive" className="text-xs sm:text-sm font-light text-gray-700">
+                  ACTIVE CATEGORY
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
-                {loading ? 'CREATING CATEGORY...' : 'CREATE CATEGORY'}
+                {loading ? (editingCategory ? 'UPDATING CATEGORY...' : 'CREATING CATEGORY...') : (editingCategory ? 'UPDATE CATEGORY' : 'CREATE CATEGORY')}
               </button>
             </form>
           </div>
@@ -775,10 +1011,26 @@ export default function CollectionsPage() {
                       <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{category.description}</p>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 flex-shrink-0 ${category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                    {category.isActive ? 'Active' : 'Inactive'}
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                      {category.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => editCategory(category)}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-light"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteCategory(category._id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-light"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -791,9 +1043,19 @@ export default function CollectionsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* SubCategory Form */}
           <div className="bg-white p-4 sm:p-6 border border-gray-200">
-            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
-              ADD NEW SUBCATEGORY
-            </h2>
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900">
+                {editingSubCategory ? 'EDIT SUBCATEGORY' : 'ADD NEW SUBCATEGORY'}
+              </h2>
+              {editingSubCategory && (
+                <button
+                  onClick={resetSubCategoryForm}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 font-light text-sm hover:bg-gray-50 transition-colors"
+                >
+                  CANCEL
+                </button>
+              )}
+            </div>
 
             <form onSubmit={handleSubCategorySubmit} className="space-y-4 sm:space-y-6">
               <div>
@@ -838,12 +1100,25 @@ export default function CollectionsPage() {
                 />
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="subCategoryActive"
+                  checked={subCategoryForm.isActive}
+                  onChange={(e) => setSubCategoryForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                />
+                <label htmlFor="subCategoryActive" className="text-xs sm:text-sm font-light text-gray-700">
+                  ACTIVE SUBCATEGORY
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
-                {loading ? 'CREATING SUBCATEGORY...' : 'CREATE SUBCATEGORY'}
+                {loading ? (editingSubCategory ? 'UPDATING SUBCATEGORY...' : 'CREATING SUBCATEGORY...') : (editingSubCategory ? 'UPDATE SUBCATEGORY' : 'CREATE SUBCATEGORY')}
               </button>
             </form>
           </div>
@@ -864,10 +1139,26 @@ export default function CollectionsPage() {
                       </p>
                       <p className="text-xs sm:text-sm text-gray-600 font-light truncate">{subCategory.description}</p>
                     </div>
-                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${subCategory.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                      {subCategory.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className={`text-xs px-2 py-1 flex-shrink-0 ${subCategory.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {subCategory.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => editSubCategory(subCategory)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-light"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteSubCategory(subCategory._id)}
+                          className="text-red-600 hover:text-red-800 text-sm font-light"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -881,9 +1172,19 @@ export default function CollectionsPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
           {/* Collection Form */}
           <div className="bg-white p-4 sm:p-6 border border-gray-200">
-            <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900 mb-4 sm:mb-6">
-              ADD NEW COLLECTION
-            </h2>
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-light tracking-wide text-gray-900">
+                {editingCollection ? 'EDIT COLLECTION' : 'ADD NEW COLLECTION'}
+              </h2>
+              {editingCollection && (
+                <button
+                  onClick={resetCollectionForm}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 font-light text-sm hover:bg-gray-50 transition-colors"
+                >
+                  CANCEL
+                </button>
+              )}
+            </div>
 
             <form onSubmit={handleCollectionSubmit} className="space-y-4 sm:space-y-6">
               <div>
@@ -984,12 +1285,25 @@ export default function CollectionsPage() {
                 </label>
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="collectionActive"
+                  checked={collectionForm.isActive}
+                  onChange={(e) => setCollectionForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                />
+                <label htmlFor="collectionActive" className="text-xs sm:text-sm font-light text-gray-700">
+                  ACTIVE COLLECTION
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 text-white font-light tracking-wide hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-900 text-sm sm:text-base"
               >
-                {loading ? 'CREATING COLLECTION...' : 'CREATE COLLECTION'}
+                {loading ? (editingCollection ? 'UPDATING COLLECTION...' : 'CREATING COLLECTION...') : (editingCollection ? 'UPDATE COLLECTION' : 'CREATE COLLECTION')}
               </button>
             </form>
           </div>
@@ -1022,10 +1336,26 @@ export default function CollectionsPage() {
                         {collection.featured && ' • Featured'}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 flex-shrink-0 ${collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                      {collection.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className={`text-xs px-2 py-1 flex-shrink-0 ${collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {collection.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => editCollection(collection)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-light"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteCollection(collection._id)}
+                          className="text-red-600 hover:text-red-800 text-sm font-light"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
